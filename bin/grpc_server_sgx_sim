@@ -1,0 +1,44 @@
+#!/bin/bash
+
+# Runfiles is hard. https://github.com/bazelbuild/bazel/issues/4054
+
+if [[ -z "${RUNFILES}" ]]; then
+  # Canonicalize the path to self.
+  pushd "$(dirname "$0")" > /dev/null
+  self="$(pwd -P)/$(basename "$0")"
+  popd > /dev/null
+
+  if [[ -e "${self}.runfiles" ]]; then
+    RUNFILES="${self}.runfiles"
+  elif [[ "${self}" == *".runfiles/"* ]]; then
+    # Runfiles dir found in self path, so select the nearest containing
+    # .runfiles directory.
+    RUNFILES="${self%.runfiles/*}.runfiles"
+  fi
+fi
+
+# The loader and argument paths are not relative to ${RUNFILES}. Rather, they
+# are relative to a directory in ${RUNFILES}. The name of this directory is
+# specified in "${RUNFILES}/MANIFEST", as the first path segment of any listed
+# file. For example, MANIFEST may have the contents
+# ```
+# foo/path/to/loader
+# foo/path/to/enclave
+# foo/path/to/data
+# ```
+# In this case, the loader and argument paths are relative to
+# "${RUNFILES}/foo".
+
+if [[ ! -z "${RUNFILES}" && -e "${RUNFILES}/MANIFEST" ]]; then
+  root_dir_name=$(head -n 1 "${RUNFILES}/MANIFEST" | cut -d "/" -f1)
+
+  # Test that the path to the loader is valid before cd'ing.
+  if [[ -e "${RUNFILES}/${root_dir_name}/secure_grpc/grpc_server_host_loader" ]]; then
+    cd "${RUNFILES}/${root_dir_name}"
+  fi
+fi
+
+# This script will still function under `bazel run` even if the above algorithm
+# could not change to the proper root directory.
+
+exec "./secure_grpc/grpc_server_host_loader" --enclave_path='secure_grpc/grpc_server_enclave_sgx_sim.so' "$@"
