@@ -36,7 +36,7 @@
 ABSL_FLAG(std::string, enclave_path, "", "Path to enclave to load");
 
 // By default, let the server run for five minutes.
-ABSL_FLAG(int32_t, server_max_lifetime, 3000,
+ABSL_FLAG(int32_t, server_max_lifetime, 3600,
           "The longest amount of time (in seconds) that the server should be "
           "allowed to run");
 
