@@ -33,6 +33,7 @@ ABSL_FLAG(std::string, enclave_path, "", "Path to enclave to load");
 ABSL_FLAG(int32_t, port, 0, "Port that the server listens to");
 ABSL_FLAG(std::string, word_to_translate, "", "Word to be translated");
 ABSL_FLAG(bool, debug, true, "Whether to use a debug enclave");
+ABSL_FLAG(std::string, server_addr, "localhost", "Server address to connect");
 
 int main(int argc, char *argv[]) {
   // Parse command-line arguments.
@@ -58,9 +59,12 @@ int main(int argc, char *argv[]) {
   LOG_IF(QFATAL, !status.ok())
       << "Loading " << enclave_path << " failed: " << status;
 
+  std::string serverAddr = absl::GetFlag(FLAGS_server_addr);
+  std::cout << std::endl << "Server address:" << serverAddr << std::endl;
+
   asylo::StatusOr<std::string> run_result =
       examples::secure_grpc::GrpcClientEnclaveGetTranslation(
-          absl::StrCat(kServerAddress, ":", port), word_to_translate);
+          absl::StrCat(serverAddr, ":", port), word_to_translate);
   LOG_IF(QFATAL, !run_result.ok())
       << "Getting translation for " << word_to_translate
       << " failed: " << run_result.status();
