@@ -53,7 +53,7 @@ asylo::Status LoadGrpcServerEnclave(
   // the ACL to enforce in the server, and its configuration for the SGX local
   // assertion authority.
   asylo::EnclaveConfig *config = load_config.mutable_config();
-  config->SetExtension(examples::grpc_server::server_address, kServerAddress);
+  // config->SetExtension(examples::grpc_server::server_address, kServerAddress);
   config->SetExtension(examples::grpc_server::port, port);
   *config->MutableExtension(examples::secure_grpc::identity_expectation) =
       expectation;
